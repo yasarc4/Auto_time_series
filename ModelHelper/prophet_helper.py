@@ -29,28 +29,25 @@ class ProphetHelper:
         self._uncertainty_samples = self.get_uncertainty_samples(n_models)
         self._changepoints = get_changepoints(df)
         self._changepoints = [self._df['ds'].iloc[i] for i in self._changepoints]
-        print ('Changepoints : ', self._changepoints)
         self._transformation_object = transformation_object
         self._trains_transformed_and_tests_raw = self.get_train_test(self._splits)
         self._models = self.initialise_models()
         self._performance = {}
 
+    def get_date_str(self, i):
+        return dt.datetime(*map(int,i.split('-')))
+
     def initialise_models(self):
         models = []
         for i in range(self._n_models):
-            print ('Changepoint less than : ', self._splits[0][1])
-            changepoints = [i for i in self._changepoints if i<self._splits[0][1]]
-            changepoints = [dt.datetime(*map(int,i.split('-'))) for i in changepoints]
+            start_date = self._splits[-1][0]
+            threshold_date = self._splits[0][1]
+            changepoints = [i for i in self._changepoints if i<threshold_date and i>start_date]
             print (changepoints)
-            # model = Prophet(#changepoints = [i for i in self._changepoints if i<self._splits[0][1]],
-            #                 holidays = self._holidays,
-            #                 seasonality_prior_scale=self._seasonality_prior_scale[i],
-            #                 holidays_prior_scale=self._holidays_prior_scale[i],
-            #                 changepoint_prior_scale=self._changepoint_prior_scale[i],
-            #                 mcmc_samples=self._mcmc_samples[i],
-            #                 interval_width=0.9, uncertainty_samples=self._uncertainty_samples[i])
-            model = {#changepoints = [i for i in self._changepoints if i<self._splits[0][1]],
-                            #'holidays' = self._holidays,
+            print (self._changepoints)
+            print (start_date, threshold_date)
+            print ('$'*140)
+            model = {#'changepoints' : [i for i in self._changepoints if i<self._splits[0][1]],
                             'seasonality_prior_scale':self._seasonality_prior_scale[i],
                             'holidays_prior_scale':self._holidays_prior_scale[i],
                             'changepoint_prior_scale':self._changepoint_prior_scale[i],
@@ -69,6 +66,7 @@ class ProphetHelper:
             performance = {}
             actuals = np.array(test['y'])
             predictions = np.zeros((len(test), self._n_models))
+            mapes = []
             for i,model_params in enumerate(self._models):
                 model = Prophet(holidays=self._holidays, **model_params)
                 model.fit(train)
@@ -77,10 +75,22 @@ class ProphetHelper:
                     prediction = self._transformation_object.inverse_transform(prediction)
                 predictions[:,i]=np.maximum(0,prediction)
                 performance['Model-'+str(i)] = self.get_error_metrics(actuals=actuals, predicted=prediction)
-            performance['Stacked Model'] = self.get_error_metrics(actuals, np.product(predictions**(1.0/self._n_models),axis=1))
+                mapes.append(performance['Model-'+str(i)]['mape'])
+            #performance['Stacked Model'] = self.get_error_metrics(actuals, np.product(predictions**(1.0/self._n_models),axis=1))
+            performance['Stacked Model'] = self.get_stacked_model_perf(actuals, predictions, mapes)
             self._performance[prediction_period] = performance
         print (self._performance)
 
+    def get_stacked_model_perf(self, actuals, predictions, mapes):
+        mapes = list(enumerate(mapes))
+        mapes = sorted(mapes, key = lambda x: x[1])
+        weights = [1/(1+i) for i in range(self._n_models)]
+        sum_weights = sum(weights)
+        weights = [k for i,k in sorted([(i,k/sum(weights)) for (i,j),k in zip(mapes,weights)])]
+        predictions = predictions**weights
+        err_metrics = self.get_error_metrics(actuals,np.product(predictions, axis=1))
+        err_metrics['weights'] = weights
+        return err_metrics
 
     def get_error_metrics(self, actuals, predicted):
         mse = mean_squared_error(y_pred = predicted, y_true=actuals)
@@ -111,10 +121,10 @@ class ProphetHelper:
         return np.linspace(7.5, 37.5, n_models)
 
     def get_mcmc_samples(self, n_models):
-        return [randint(0,7) for i in range(n_models)]
+        return [randint(0,10) for i in range(n_models)]
 
     def get_uncertainty_samples(self, n_models):
-        return [randint(int(0.06*self._row_count), int(0.24*self._row_count)) for i in range(n_models)]
+        return [int(i) for i in np.linspace(int(0.1*self._row_count), int(0.4*self._row_count), n_models)]
 
     def check_splits(self, splits):
         try:
