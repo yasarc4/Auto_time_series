@@ -1,7 +1,7 @@
-# SSB Cash in Transit - Cash Demand Forecasting
+# Time Sries forecasting using Prophet
 
 ### What we Forecast?
-  > ATM/BTM/CRS cash demand using historical data and using the various machine & resource constraints to plan the cash replenishment trips.
+  > Demand using historical data
 
 ### Method Used:
  * Aggregate to day level
@@ -18,6 +18,7 @@
  * pandas
  * numpy
  * sklearn
+ * fbprophet
 
 ### PreRequisites to run?
   > Add the dataset path to System Environment
