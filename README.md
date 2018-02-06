@@ -1,7 +1,7 @@
-# Time Sries forecasting using Prophet
+# Time Series forecasting using Prophet
 
 ### What we Forecast?
-  > Demand using historical data
+  > Demand forecasting using historical data
 
 ### Method Used:
  * Aggregate to day level
