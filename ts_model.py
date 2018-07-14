@@ -7,15 +7,7 @@ import ModelHelper
 from ModelHelper import *
 from TransformHelper import *
 
-all_csvs = ['ATM_8178_ALL.csv','ATM_8212_ALL.csv','ATM_5145_ALL.csv','ATM_5384_ALL.csv','ATM_5463_ALL.csv','ATM_8877_ALL.csv','ATM_8948_ALL.csv','ATM_8959_ALL.csv']
-# atm_8178 = load_csv('datasets/ATM_8178_ALL.csv', max_rows=21000) # 16% x 12%
-# atm_8212 = load_csv('datasets/ATM_8212_ALL.csv', max_rows=21000) # 12% x 21%
-# atm_5145 = load_csv('datasets/ATM_5145_ALL.csv', max_rows=21000) # 148% x 26%
-# atm_5384 = load_csv('datasets/ATM_5384_ALL.csv', max_rows=21000) # 30% x 18%     Done
-# atm_5463 = load_csv('datasets/ATM_5463_ALL.csv', max_rows=21000)  # 9% x 30%
-# atm_8877 = load_csv('datasets/ATM_8877_ALL.csv', max_rows=21000)  # 19% x 12%    Done
-# atm_8948 = load_csv('datasets/ATM_8948_ALL.csv', max_rows=21000)  # 22.7% x 16%
-# atm_8959 = load_csv('datasets/ATM_8959_ALL.csv', max_rows=21000)  # 11.3% x 12%    Done
+all_csvs = ['data1.csv','data2.csv']
 
 dataset = all_csvs[5]
 dataset_home = os.environ['DATASET_HOME']
